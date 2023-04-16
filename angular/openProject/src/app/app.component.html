@@ -1,0 +1,16 @@
+<p>hola</p>
+<h1>{{title}}</h1>
+<app-art-work></app-art-work>
+<div>
+{{docTest()}}
+<!-- {{pokeUrl}} -->
+</div>
+<div style = "column-count:4;">
+  <ul *ngFor = "let item of firstGenPokeDetails" >
+  <div style =  "backgroundColor: purple; color: white;height: 310px;break-inside: avoid;">
+    <p>hola</p>
+    como se encuentrs {{item.name}}
+    <!-- <img src= "{{item.sprites.front_default}}" > -->
+  </div>
+  </ul>
+</div>
