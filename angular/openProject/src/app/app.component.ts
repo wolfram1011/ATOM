@@ -10,6 +10,13 @@ export class AppComponent {
   public pokeUrl = undefined ;
   public firstGenPokemonIdsBody = undefined ;
   public firstGenPokeDetails :  any[];
+  public color: string = 'red';
+  public popUp: string = 'none';
+  public pokeName: string ;
+  public pokeMove: string;
+  public pokeMove2: string;
+
+
   // public doc: string = "";
 
 
@@ -31,21 +38,19 @@ export class AppComponent {
       };
       fetchFirstGenPokemons();
 
-      // const firstGenPokemonIdsBody = "undefined" ;
-      // fetch('https://pokeapi.co/api/v2/type/8/')
-      // .then(response =>  response.json())
-      // .then(body => {this.firstGenPokemonIdsBody = body;
-      //   this.pokeUrl = body.pokemon;
-      // });
-
-      // firstGenPokemonIdsBody.pokemon.map( (p) =>{
-      //   fetch(p.pokemon.url)
-      //   .then(body => );
-      //   return await pDetails.json();
-      //
-      // })
 
 
+    }
 
+    setPopUp(name: string, move: string, move2: string): void {
+      this.pokeName = name;
+      this.pokeMove = move;
+      this.pokeMove2 = move2;
+      if (this.popUp === 'inline') {
+        this.popUp = 'none';
+      }else if (this.popUp === 'none') {
+        this.popUp = 'inline';
+
+      }
     }
   }
