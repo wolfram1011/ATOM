@@ -1,0 +1,26 @@
+#pokeDiv {
+  background-color: green;
+  color: white;
+  height: 300px;
+  break-inside: avoid;
+  margin-bottom: 10px;
+  margin-top: 0px;
+}
+
+#pokeContainer{
+  column-count: 4;
+  text-align: center;
+
+}
+#test{
+  background-color: black;
+  color: white;
+}
+
+#listStyle{
+  margin-top: 0px;
+}
+
+#pokeImage {
+  border:  1000px;
+}

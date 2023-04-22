@@ -1,0 +1,24 @@
+  const firstName = 'John';
+  const lastName = 'Wick';
+  const age = 28;
+  const job = 'Gentle';
+  const mArr = [1,2,3,4];
+  const myObj = {name : 'Toto',
+    age : 30
+};
+  const inputPlaceholder = 'Enter your Details';
+  const getFullName = (firstName,lastName) => {
+    return `${firstName} ${lastName}`}
+  const detailsInputbox = <input placeholder = {inputPlaceholder} autoComplete/>;   
+
+
+
+    <div classname = "App">
+    <h3> Full Name: {getFullName(firstName, lastName)}</h3>
+    <p>Age: {myObj.age} </p>
+    <p> Job: {job}</p>
+    {mArr[1]}</br>
+    {mArr[0]>0 ? "True" : "False"}
+    <p>{detailsInputbox}</p>
+
+    </div>

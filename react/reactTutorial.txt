@@ -1,0 +1,75 @@
+import logo from './logo.svg';
+import './App.css';
+import React from 'react';
+
+
+function App(){
+
+  const blogArr = [
+    {
+      title: 'Blog Title 1',
+      description: 'Lorem Ipsum Dolor'
+    },
+    {
+      title: 'Blog Title 2',
+      description: 'Lorem Ipsum Dolor'
+    },
+    {
+      title: 'Blog Title 3',
+      description: 'Lorem Ipsum Dolor'
+    }
+  ]
+
+  const blogCards = blogArr.map ((item)=>{
+    console.log(item);
+
+    return (
+      <div className="BlogCard" key = {pos}>
+      <h3> {item.title} </h3>
+      <p>{item.description}</p>
+      </div>
+    )
+
+  })
+
+  const blogObj = {
+    title : 'Blog Title 1',
+    description : 'Lorem Ipsum Dolor'
+  }
+
+
+  return (
+    <div className = "App">
+    {blogCards}
+    /*  <div className = "BlogCard">
+        <h3> {blogObj.title} </h3>
+        <p>{blogObj.description }
+        </p>
+        <hr></hr>
+      </div>
+      <div className = "BlogCard">
+        <h3> {blogObj.title} </h3>
+        <p>{blogObj.description }
+        </p>
+      </div>
+      <hr></hr>
+      <div className = "BlogCard">
+        <h3> {blogObj.title} </h3>
+        <p>{blogObj.description } </p>
+      </div>
+      <hr></hr>*/
+    </div>
+  );
+}
+
+// class App extends Component {
+// render() {
+// return (
+// <div className="App">
+// <h2>Welcome to the Road to learn React</h2>
+// </div>
+// );
+// }
+// }
+
+export default App;
