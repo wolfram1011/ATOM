@@ -1,0 +1,25 @@
+<p>hola</p>
+<h1>{{title}}</h1>
+<app-art-work></app-art-work>
+<div>
+{{docTest()}}
+
+</div>
+
+ <div [ngStyle] = "{'display': popUp}" id = "popupStyle" (mouseleave) = "setPopUp('','','')" >
+   {{pokeName}}, {{pokeMove}}, {{pokeMove2}}
+
+</div>
+
+<div style = "column-count:4;">
+  <ul *ngFor = "let item of firstGenPokeDetails" >
+  <div id = "pokeDiv" (click) = "setPopUp(item.name, item.moves[0]['move']['name'],
+    item.moves[1]['move']['name'])">
+    {{item.name}}
+    <a href="{item.pokeurl}" target="_blank">pagina a pokemones </a>
+
+  </div>
+  </ul>
+</div>
+    <!-- <img src= "{{item.sprites.front_default}}" > -->
+  <!-- <img src= "{{pokeImage}}" > -->

@@ -1,0 +1,17 @@
+#popupStyle {
+  background-color: blue;
+  z-index: 1;
+  position: fixed;
+  width: 400px;
+  height: 500px;
+  top : 50px;
+  left: 550px;
+  color: white;
+}
+
+#pokeDiv {
+  background-color: green;
+  color: white;
+  height: 300px;
+  break-inside: avoid;
+}
