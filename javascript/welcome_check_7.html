@@ -1,0 +1,583 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+        <title> Promad machine Learning </title>
+
+
+    <!-- Pyscript -->
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+    <!--<link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />-->
+    <link rel="stylesheet" type = "text/css" href="{% static 'drop.css' %}">
+
+
+
+    <!-- bootstrap for styling , Pyscript can also be used for styling instead of bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous" />
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <style>
+         
+      
+
+    </style>
+
+
+
+</head>
+<body>
+
+<!-- write your Python code in py-script tag -->
+<py-env>
+- folium
+- numpy
+- pandas
+- geocoder
+
+</py-env>
+<py-script>
+from js import document,alert
+import numpy as np
+import geocoder
+import pandas as pd
+import os
+import re
+import json
+import folium
+import urllib
+import webbrowser
+import urllib.request
+import webbrowser
+
+
+from pyodide.http import open_url
+from folium.plugins import HeatMap
+from folium.plugins import FloatImage
+from folium.plugins import HeatMapWithTime
+from folium.features import ColorLine
+from js import document,alert
+
+
+url = open_url("https://raw.githubusercontent.com/anarespromad/folium/main/DatosV1_Dnom.csv")
+df = pd.read_csv(url)
+
+
+urlros = ('https://raw.githubusercontent.com/anarespromad/folium/main/output-onlinepngtools.png')
+
+color1 = {'fillColor': '#536878', 'color': '#536878','weight': 1}
+color2 = {'fillColor': '#49678d', 'color': '#49678d','weight': 2}
+color3 = {'fillColor': '#3e5f8a', 'color': '#3e5f8a','weight': 3}
+tiles = [None,"Stamen Terrain","openstreetmap","Stamen Toner","cartodbpositron"]
+
+
+#prueba_subirdb y documentos de
+
+
+def mapas(tile,cuadrante,sector,alcaldia):
+  
+  m = folium.Map(location=[19.4326018,-99.1332049],zoom_start=11,tiles=tile)
+  FloatImage(urlros, bottom=60, left=70).add_to(m)
+
+  draw = folium.plugins.Draw(export=True)
+  draw.add_to(m)
+
+  fs = folium.plugins.Fullscreen()
+  m.add_child(fs)
+
+  minimap = folium.plugins.MiniMap()
+  m.add_child(minimap)
+
+  datag = open_url("https://raw.githubusercontent.com/anarespromad/folium/main/Cuadrantes.geojson")
+  dic_c = json.load(datag)
+
+  url3 = open_url('https://raw.githubusercontent.com/anarespromad/folium/main/Sectores.geojson')
+  dic_s = json.load(url3)
+
+  url4 = open_url('https://raw.githubusercontent.com/anarespromad/folium/main/Alcadiasv1.GEOJSON')
+  dic_a = json.load(url4)
+
+
+  if cuadrante == True:
+    folium.GeoJson(dic_c, name="Cgeojson",style_function=lambda x:color1).add_to(m)
+  if sector == True:
+    folium.GeoJson(dic_s, name="Sgeojson",style_function=lambda x:color2).add_to(m)
+  if alcaldia == True:
+    folium.GeoJson(dic_a, name="Ageojson",style_function=lambda x:color3).add_to(m)
+
+  return m,dic_c,dic_s,dic_a
+
+mapa,a,b,c=mapas(tiles[4],cuadrante=True,sector=True,alcaldia=True)
+
+url = open_url("https://raw.githubusercontent.com/anarespromad/folium/main/Alcaldias_ID.csv")
+df_alcaldia=pd.read_csv(url)
+df_alcaldia.drop(['UUID','CREADO_POR','FECHA_CREACION','MODIFICADO_POR','FECHA_MODIFICACION','VISIBLE','ID_ESTADO'], axis = 'columns', inplace=True)
+df_alcaldia = df_alcaldia.drop_duplicates(subset=['ID_MUNICIPIO']) # alcaldias y su ID
+
+id=df_alcaldia['ID_MUNICIPIO'].tolist()
+al=df_alcaldia['NOMBRE_MUNICIPIO'].tolist()
+for j in range(len(al)):
+  df.loc[df['ID_MUNICIPIO'] == id[j],'ID_MUNICIPIO'] = al[j]
+
+#funcion de filtracion de db - menu de busqueda
+
+def datos_fil(df,dista,datron):
+#  print('Listas a filtrar:',list(df.columns.values))
+#  print('Seleccione la lista a filtrar:')
+
+  l_des=str(dista)
+  lista_p=df[l_des].tolist()
+
+  def elem_unicos(l_des):
+
+    l_unicos=list(dict.fromkeys(df[l_des].tolist()))
+    l_unicos = [x for x in l_unicos if pd.isnull(x) == False]
+    #print('Elementos unicos de la lista:',l_unicos)
+
+    return l_unicos
+  elem_unicos(l_des)
+
+  #print('Patron a encontrar:')
+  patron= str(datron)
+  lista_d= []
+
+  for i in range(len(lista_p)):
+    restul=re.match(patron, str(lista_p[i]))
+    lista_d.append(restul)
+
+  ind = 0
+  lista_index=[]
+
+  for i in range(len(lista_d)):
+    ind +=1
+    if lista_d[i] != None:
+      lista_index.append(ind-1)
+
+  ind=0
+  index=lista_index
+
+  return index
+
+jndex=datos_fil(df,'ID_EVENTO',4)
+
+m,dic_c,dic_s,dic_a=mapas(tiles[4],False,True,True)
+
+def mapas_calor(df,til,geo_s,geo_c,geo_a):
+
+  index=jndex#datos_fil(df,hoja,jefe)
+  #m,dic_c,dic_s,dic_a=mapas(tiles[4],geo_s,geo_c,geo_a)
+
+  df_f=df.iloc[index, :]
+  lad=df_f['LATITUD'].tolist()
+  log=df_f['LONGITUD'].tolist()
+
+  cor=[lad,log]
+  vec=[1]*len(lad)
+
+  mapa_calor = HeatMap( list(zip(lad, log, vec)),
+                      name="Datos",
+                      min_opacity=0.2,
+                      max_val=max(vec),
+                      radius=20,
+                      blur=30,
+                      max_zoom=1)
+  mapa_calor.add_to(m)
+
+  #mapa.save('mapa_ejemplo_calor.html')
+
+  return m
+
+def prueba(df,til,geo_s,geo_c,geo_a,luna,sol):
+
+  index=datos_fil(df,luna,sol)
+  m,dic_c,dic_s,dic_a=mapas(tiles[4],geo_s,geo_c,geo_a)
+
+  df_f=df.iloc[index, :]
+  lad=df_f['LATITUD'].tolist()
+  log=df_f['LONGITUD'].tolist()
+
+  cor=[lad,log]
+  vec=[1]*len(lad)
+
+  mapa_calor = HeatMap( list(zip(lad, log, vec)),
+                      name="Datos",
+                      min_opacity=0.2,
+                      max_val=max(vec),
+                      radius=20,
+                      blur=30,
+                      max_zoom=1)
+
+  mapa_calor.add_to(m)
+
+  mapa.save('mapa_ejemplo_calor.html')
+  #webbrowser.open('mapa_ejemplo_calor.html')
+  #k =map.showMap()
+  return m
+
+
+from pandas.io.json import json_normalize
+
+df_alcaldia_json = pd.json_normalize(dic_a['features']) #Alcaldias cdmx para 
+
+id_alcaldia=[15,6,7,13,8,4,10,9,5,12,11,14,2,1,3,16]
+fill_color=['BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'YlGnBu', 'YlOrBr','YlOrRd']
+alcaldias=['ALVARO OBREGON','AZCAPOTZALCO','BENITO JUAREZ','COYOACAN',
+           'CUAJIMALPA DE MORELOS','CUAUHTEMOC','GUSTAVO A. MADERO',
+           'IZTACALCO','IZTAPALAPA','LA MAGDALENA CONTRERAS','MIGUEL HIDALGO',
+           'MILPA ALTA','TLAHUAC','TLALPAN','VENUSTIANO CARRANZA','XOCHIMILCO']
+
+
+
+def mapas_coropleta_mer(til,fill_color,cista,catron):
+
+  index=datos_fil(df,cista,catron)
+
+  df_f=df.iloc[index, :]
+  freq = df_f.groupby(['ID_MUNICIPIO']).count() 
+  datos_alc=freq['ID_EVENTO'].tolist()
+
+  df_datos_alcc = pd.DataFrame()
+  df_datos_alcc['TOTAL_EVENTOS'] = freq['ID_EVENTO'].tolist()
+  df_datos_alcc['ALCALDIAS'] = list(freq.index)
+
+  lista_iguales=list(set(list(freq.index)) ^ set(alcaldias))
+
+  df_datos_alcc=df_datos_alcc.append([{'ALCALDIAS': x} for x in lista_iguales], ignore_index=True)
+  df_datos_alcc=df_datos_alcc.fillna(0)
+
+  for j in range(len(al)):
+    df_datos_alcc.loc[df_datos_alcc['ALCALDIAS'] == alcaldias[j],'ID_MUNICIPIO'] = int(id_alcaldia[j])
+
+  #mapa,a,b,c=mapas(tiles[4],cuadrante=True,sector=True,alcaldia=True)
+
+  mapa,dic_c,dic_s,dic_a=mapas(til,False,False,False)
+
+  folium.Choropleth(dic_a,
+                    name='choropleth',
+                    data=df_datos_alcc,
+                    columns=['ID_MUNICIPIO','TOTAL_EVENTOS'],
+                    key_on='properties.fid',
+                    fill_color=fill_color,
+                    fill_opacity=0.8,
+                    line_opacity=1.0,
+                    legend_name='Eventos por Alcaldía').add_to(mapa)
+
+  folium.LayerControl().add_to(mapa)
+
+  mapa.save('mapa_ejemplo_coropleta.html')
+
+  return mapa
+
+def mapas_cor(df,til,geo_s,geo_c,geo_a,tista,tatron):
+
+  mapa,a,b,c=mapas(tiles[4],cuadrante=True,sector=True,alcaldia=True)
+
+  index=datos_fil(df,tista,tatron)
+  m,dic_c,dic_s,dic_a=mapas(til,geo_s,geo_c,geo_a)
+
+  df_f=df.iloc[index, :]
+  lad=df_f['LATITUD'].tolist()
+  log=df_f['LONGITUD'].tolist()
+
+  cor=[lad,log]
+  folium.LayerControl().add_to(m)
+
+  for i in range(len(lad)):
+    folium.Marker(location=[lad[i], log[i]]
+                  ,popup="ID_EVENTO:"+str(df['ID_EVENTO'].tolist()[index[i]])+"\n"+"LUGAR:"+str(df['LUGAR'].tolist()[index[i]])
+                  ,icon=folium.Icon(icon="remove"), ).add_to(m)
+  
+  mapa.save('mapa_ejemplo_cor.html')
+
+  return m
+
+
+def letra_capital(patron):
+  if patron.isalpha() == True:
+    patron = patron.upper()
+  return patron
+
+
+
+def cor_direc(direccion,cordenadas,ip,lista_cor):
+
+  geolocator = Nominatim(user_agent="geoapiExercises")
+
+  if direccion == True: 
+    #print('Indroduce la dirección') #Prolongación Guadalupe Victoria,Los Reyes, Xochimilco, Ciudad de México
+    lugar=lista_cor
+
+    localizacion = geolocator.geocode(lugar, timeout=2, exactly_one=False)
+    localizacion=list(localizacion[0][1])
+
+    return localizacion,lugar
+    
+  if cordenadas == True:
+    print('Indroduce coordendas (Latitud,Lognitud)') #19.433726197085818, -99.17520267747044
+    cordenadas=input()
+
+    direc = geolocator.reverse(cordenadas)
+    direc=direc[0]
+
+    return direc,cordenadas
+
+  if ip == True:
+    #print('Indroduce la dirección IP')
+    ip= 'no existe codigo'
+
+    ip = geocoder.ip(ip) #checar que las cordendas vacias nos vevuelvan un entorno vacio
+    direccion=ip[0]
+    coor_ip=ip.latlng
+
+    return coor_ip,ip
+
+def mapas_puntos(direccion,cordenadas,ip,tile,m_c,m_s,m_a,lista_puntos):
+  cor,det=cor_direc(direccion,cordenadas,ip,lista_puntos)
+  mapa,a,b,c=mapas(tile,m_c,m_s,m_a)
+  folium.Marker(location=cor,popup=str(det)+'\n'+str(cor), icon=folium.Icon(color="blue",icon="glyphicon glyphicon-flag"), ).add_to(mapa)
+  return cor
+  
+
+
+
+def menu(df,sel,yista,yatron):
+  if sel == 'calor':
+    mapa=prueba(df,tiles[4],True,False,False,yista,yatron)
+  elif sel == 'col':
+    mapa = mapas_coropleta_mer(tiles[4],fill_color[9],yista,yatron)
+  elif sel == 'mov':
+    mapa =mapas_cor(df,tiles[4],True,False,False,yista,yatron)
+#  elif sel == 'puntos':
+#    cor,det=cor_direc(direccion,cordenadas,ip,lista_puntos)
+    
+  return mapa
+    
+
+
+def convert(*ags, **kws):
+    
+  mista = document.getElementById('lista').value;
+  opcion = document.getElementById('opcion').value;
+  matron = document.getElementById('input_option').value;
+  matron = letra_capital(matron)
+  #acx=mapas_calor(df,tiles[4],geo_s=False,geo_c=True,geo_a=True,mista,matron)
+  #prueba2=datos_fil(df,mista,matron)
+  #prueba2 = prueba(df,tiles[4],True,False,False,mista,matron)
+  #prueba2 = mapas_cor(df,tiles[4],True,False,False,mista,matron)
+  #prueba2 =  menu(df,opcion,mista,matron)
+  cor,det = cor_direc(True,False,False,True,mista)
+  #prueba2 = mapas_coropleta_mer(tiles[4],fill_color[9],mista,matron)
+    
+  #mapa,a,b,c=mapas(tiles[4],cuadrante=True,sector=True,alcaldia=True)
+  pyscript.write("Fahrenheit", cor)
+</py-script>
+
+<py-script>
+
+def cuadro_fil(df,lista): 
+  #print('Listas a filtrar:',list(df.columns.values))
+  #print('Seleccione la lista a filtrar:')
+  lista = str(lista)
+
+  l_des=str(lista)
+  lista_p=df[l_des].tolist()
+
+  def elem_unicos(l_des):
+
+    l_unicos=list(dict.fromkeys(df[l_des].tolist()))
+    l_unicos = [x for x in l_unicos if pd.isnull(x) == False]
+    #print('Elementos unicos de la lista:',l_unicos)
+
+    return l_unicos
+  el_u=elem_unicos(l_des)
+  return el_u
+ 
+
+str_unicos = []
+def string_conv(unicos):
+  str_unicos.clear()
+  for i in unicos:
+    a=str(i)
+    str_unicos.append(a)
+  return str_unicos
+
+
+def texto(*ags, **kws):
+    lista = document.getElementById('lista').value;
+    l_unicos=cuadro_fil(df,lista)
+    l_unicos = string_conv(l_unicos)
+    l_unicos='*'.join(str_unicos)
+    pyscript.write("l_unicos",l_unicos )
+    
+
+</py-script>
+    <div class="container">
+      
+        <h1 class="text-center">
+            Promad Machine Learning
+        </h1>
+        <br />
+<!--
+        <textarea id = "cuadro" style = "margin-bottom:.5cm;float: right;overflow-y:scroll;border:1px solid #ced4da; border-radius: 0.25rem;" rows=" 4" cols="150" aria-label="Large" aria-describedby="inputGroup-sizing-sm" placeholder="Result"></textarea><br/> -->
+        
+        <select  id="opcion" type="text" style = "position:relative;border:1px solid #ced4da; border-radius: 0.25rem; ;"  onmouseleave = "mapa_puntos();">
+          
+          <option value="col">  COLORETA</option>
+          <option value="calor">CALOR</option>
+          <option value="punto" >PUNTOS</option>
+          <option value="mov">MOVIMIENTO</option>
+        </select>
+
+        <select id="lista" type="text" style = "position:relative;border:1px solid #ced4da;border-radius: 0.25rem;" pys-onClick="texto">
+          <option value="ID_EVENTO">--- Selecciona una opción ---</option>
+          <option value="ID_EVENTO">ID_EVENTO</option>
+          <option value="ID_DIRECCION_EVENTO">ID_DIRECCION_EVENTO</option>
+          <option value="ID_COLONIA">ID_COLONIA</option>
+          <option value="NOMBRE_COLONIA">NOMBRE_COLONIA</option>
+          <option value="ID_MUNICIPIO">ID_MUNICIPIO</option>
+          <option value="ID_ESTADO">ID_ESTADO</option>
+          <option value="LATITUD">LATITUD</option>
+          <option value="LONGITUD">LONGITUD</option>
+          <option value="LUGAR">LUGAR</option>
+          <option value="CALLE">CALLE</option>
+          <option value="CODIGO_POSTAL">CODIGO POSTAL</option>
+          <option value="ID_PERSONA_INVOLUCRADA">ID_PERSONA_INVOLUCRADA</option>
+          <option value="NOMBRE">NOMBRE</option>
+          <option value="APELLIDO_PATERNO">APELLIDO_PATERNO</option>
+          <option value="APELLID_MATERNO">APELLIDO_MATERNO</option>
+          <option value="SEXO">SEXO</option>
+          <option value="EDAD">EDAD</option>
+          <option value="FECHA_MODIFICACION">FECHA_MODIFICACION</option>
+          <option value="ID_TIPO_PERSONA">ID_TIPO_PERSONA</option>
+          <option value="ID_PERSONA_ORIGEN">ID_PERSONA_ORIGEN</option>
+          <option value="ID_PERSONA_EVENTO">ID_PERSONA_EVENTO</option>
+          <option value="FECHA_DESCRIPCION_EVENTO">FECHA_DESCRIPCION_EVENTO</option>
+          <option value="FECHA_DESCRIPCION">FECHA_DESCRIPCION</option>
+          <option value="DESCRIPCION">DESCRIPCION</option>
+          <option value="ID_OBJECTO_INVOLUCRADO">ID_OBJETO_INVOLUCRADO</option>
+          <option value="OBSERVACIONES">OBSERVACIONES</option>
+          <option value="ID_OBJETO">ID_OBJETO</option>
+          <option value="CANTIDAD">CANTIDAD</option>
+          <option value="VALOR_ESTIMADO">VALOR_ESTIMADO</option>
+          <option value="ID_VEHICULO_INVOLUCRADO">ID_VEHICULO_INVOLUCRADO</option>
+          <option value="NUMERO_PLACA">NUMERO_PLACA</option>
+          <option value="SENIAS_PARTICULARES">SENIAS_PARTICULARES</option>
+          <option value="ID_COLOR">ID_COLOR</option>
+          <option value="ID_TIPO_VEHICULO">ID_TIPO_VEHICULO</option>
+          <option value="ID_ESTADO_ORIGEN">ID_ESTADO_VEHICULO</option>
+          <option value="ID_VEHICULO_ORIGEN">ID_VEHICULO_ORIGEN</option>
+          <option value="ID_USO_VEHICULO">ID_USO_VEHICULO</option>
+          <option value="ID_ESTADO_FISICO_VEHICULO">ID_ESTADO_FISICO_VEHICULO</option>
+          <option value="NUMERO_TELEFONO">NUMERO_TELEFONO</option>
+          <option value="FOLIO">FOLIO</option>
+          <option value="ID_DISPOSITIVO">ID_DISPOSITIVO</option>
+          <option value="FECHA_INICIO">FECHA_INICIO</option>
+          <option value="FECHA_FIN">FECHA_FIN</option>
+          <option value="ID_MOTIVO">ID_MOTIVO</option>
+          <option value = "NOMBRE_MOTIVO">NOMBRE_MOTIVO</option>
+          <option value="PRIORIDAD">PRIORIDAD</option>
+          <option value="FECHA_EVENTO">FECHA_EVENTO</option>
+
+        </select>
+
+ <!--        <button id="texto" type="submit"  class="btn btn-info" pys-onClick="texto" >Texto</button>
+
+       <input style = "border:1px solid #ced4da;border-radius: 0.25rem;"id="patron" type="text" onkeyup="filtro_patron()" aria-label="Large" aria-describedby="inputGroup-sizing-sm" placeholder="Ingresa el patron" > -->
+
+        <input style = "border:1px solid #ced4da;border-radius: 0.25rem;" type="text" id = "input_option"  onClick = "option_append(value)">
+
+        <select  style= "display:none;border:1px solid #ced4da;border-radius: 0.25rem;position:absolute;top:125px;right:645px;z-index:1;width:200px" id = "option_menu" type = "text"  onclick="option_select(value);" onmouseleave = "desaparecer(style)" multiple>
+          
+        </select> 
+
+        <input style = "border:1px solid #ced4da;border-radius: 0.25rem; display: none;" type="text" id = "mapa_puntos" pys-onClick="texto">
+                
+
+        <script>
+
+          function mapa_puntos(){
+            var input = document.getElementById('opcion').value;
+            if(input == 'punto'){
+              document.getElementById('lista').style.display = 'none';
+              
+            }
+            else{
+              document.getElementById('lista').style.display = 'inline';
+
+            }
+            //
+           
+
+          }
+
+
+          function desaparecer(estilo){
+            estilo.display = 'none';
+
+          }
+          function option_select(valor){
+          document.getElementById('input_option').value = valor;
+          
+          }
+
+          function option_append(valor_input){
+            while (document.getElementById('option_menu').lastChild) {
+              document.getElementById('option_menu').removeChild(document.getElementById('option_menu').lastChild);
+            }
+            let col_filtro =document.getElementById("l_unicos").innerHTML;
+            let opciones_child = col_filtro.split('*');
+            
+
+            if(valor_input != ''){
+              
+              document.getElementById("option_menu").style.display="inline";
+              for (i = 0; i < opciones_child.length; i++){
+                if (opciones_child[i].toLowerCase().startsWith(valor_input)){
+                  let bucle = document.createElement('option');
+                  bucle.innerText = opciones_child[i];
+                  bucle.name = 'id_evento';
+                  bucle.value = opciones_child[i];
+                  document.getElementById('option_menu').appendChild(bucle);
+                }
+              }
+
+            }else{
+              document.getElementById("option_menu").style.display="none";
+            }
+
+          }
+
+
+        </script>
+
+ 
+      
+        
+        
+        
+        
+      
+      </br>
+      
+        
+        <button class="btn btn-info"  id = "convert" type = "submit" onclick="refresh_button()"  pys-onClick="convert" >convert</button>
+  
+        
+        <script>
+          function refresh_button() {
+            document.getElementById("Fahrenheit").innerHTML = "";
+            }
+
+        </script>
+     
+     
+     <p>
+      <h4 >Result:</h4>
+      <div id="Fahrenheit" type = "reset" ></div></p>   
+      <div  id = "l_unicos"></div>
+
+    </body>
+    </html>
+    </body>
+    </html>
